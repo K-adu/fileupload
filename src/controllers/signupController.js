@@ -62,7 +62,6 @@ const signupController = async (fullName,userName,email,password,req,res)=>{
             email: trimmedEmail,
             password: hashedPassword,
         });
-
         try {
             // Save the new user to the database
             const savedUser = await newUser.save();
@@ -71,7 +70,6 @@ const signupController = async (fullName,userName,email,password,req,res)=>{
             //generating the jwt token
             const token = jwt.sign({ userId: savedUser._id, email: savedUser.email, userName: savedUser.userName}, secretKey);
             savedUser.tokens.push({token})
-            await savedUser.save()
             // Handle the success case
             return res.status(200).json({ success: true, user: savedUser, token });
         } catch (error) {
