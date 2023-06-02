@@ -1,11 +1,20 @@
+//importing third party liabiries
 const express = require('express')
-const validator = require('validator')
+
+
+// importing modules
 const signupController = require('../controllers/signupController')
-//
+
+
+
+// initiating middlewares
 router = express.Router()
+
+
+//signup new user route
 router.post('/myapp/signup', async (req, res) => {
     const { fullName, userName, email, password } = req.body;
-   signupController(fullName,userName,email,password,req,res)
+    await signupController(fullName,userName,email,password,req,res)
 
   });
   
