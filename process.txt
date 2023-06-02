@@ -1,20 +1,8 @@
 et up the project:
 
-Initialize a new Node.js project.
-Install necessary dependencies, such as Express, Handlebars, bcryptjs, jsonwebtoken, and any other required packages.
-Create the file structure:
 
-Create the necessary directories and files for the project, including routes, controllers, views, and models.
-Set up the database:
 
-Choose and set up a database system (e.g., MongoDB, MySQL) to store user information.
-Create a user schema/model with fields like name, email, password, etc.
-Implement the signup functionality:
 
-Create a route and controller to handle the signup process.
-In the signup route, validate the incoming request data (e.g., check for required fields, email format).
-Hash the user's password using a hashing algorithm (e.g., bcryptjs).
-Create a new user object based on the validated data and save it to the database.
 Generate a JWT (JSON Web Token) with a secret key and include relevant user information.
 Return the JWT as a response to the client.
 Implement the login functionality:

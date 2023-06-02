@@ -1,23 +1,16 @@
 
 //importing third parties liabires
 const validator = require('validator');
-const Joi = require('joi')
-const jwt = require('jsonwebtoken')
 
+
+const hashData = require('../handlers/bcrypt')
 //importing modules
-const User = require('../models/schema/user');
-const hashData =  require('../handlers/bcrypt')
+const {createNewUser, checkExistingData} = require('../repository/userRepository')
+const joiSignupValidator = require('../handlers/joi')
 
-//constnts that need to be hidden pachi tira
-const secretKey = "nothingcomparestoyou"
+
 
 // joi validating trim min value string andnot empty condtion
-const signupSchema = Joi.object({
-    fullName: Joi.string().trim().min(3).required(),
-    userName: Joi.string().trim().min(3).required(),
-    email: Joi.string().trim().email().required(),
-    password: Joi.string().min(8).required(),
-})
 
 
 //function to handel the signup
@@ -27,8 +20,7 @@ const signupController = async (fullName,userName,email,password,req,res)=>{
         const trimmedUserName = userName.trim();
         const trimmedEmail = email.trim();
 
-        //calling the joi validation 
-        await signupSchema.validateAsync(req.body)
+        joiSignupValidator(fullName,userName,email,password,req)
 
     // Assuming fullName should only contain alphabetic characters
         const fullNameRegex = /^[A-Za-z]+$/;
@@ -51,37 +43,23 @@ const signupController = async (fullName,userName,email,password,req,res)=>{
         }
 
     //checking if username and email already exist in the database
-        const existingEmail = await User.findOne({email: trimmedEmail})
-        const existingUserName = await User.findOne({email: trimmedUserName})
-        if(!existingEmail && !existingUserName){
-            const hashedPassword = await hashData(password)
-            
-            const newUser = new User({
-            fullName: trimmedFullName,
-            userName: trimmedUserName,
-            email: trimmedEmail,
-            password: hashedPassword,
-        });
-        try {
-            // Save the new user to the database
-            const savedUser = await newUser.save();
-
-
-            //generating the jwt token
-            const token = jwt.sign({ userId: savedUser._id, email: savedUser.email, userName: savedUser.userName}, secretKey);
-            savedUser.tokens.push({token})
-            // Handle the success case
-            return res.status(200).json({ success: true, user: savedUser, token });
-        } catch (error) {
-            // Handle the error case
-            return res.status(500).json({ error: 'An error occurred while saving the user to the database' });
+        try{
+        const hashedPassword = await hashData(password)
+        const emailExists = await checkExistingData('email', trimmedEmail);
+        const userNameExists = await checkExistingData('userName', trimmedUserName);
+    
+        if (!emailExists && !userNameExists) {
+         const token = await createNewUser(trimmedFullName, trimmedUserName, trimmedEmail, hashedPassword);
+    
+          // Handle success response
+          return res.status(200).json({ success: true, token: token });
+        } else {
+          // Handle existing user error response
+          return res.status(400).json({ error: 'Username or email already in use' });
         }
-
-        }else{
-            return res.status(400).json({
-                error: 'Username or email already in use'
-            })
-        }
-
+      } catch (error) {
+        // Handle other errors
+        return res.status(500).json({ error: 'An error occurred' });
+      }
 }
 module.exports = signupController;
